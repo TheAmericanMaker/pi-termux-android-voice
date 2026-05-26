@@ -39,3 +39,17 @@
 - [x] Add GitHub issue templates for bugs, Android setup help, and TTS engine reports.
 - [x] Add example prompts for enabling/disabling verbal mode.
 - [x] Add a longer TTS test paragraph command.
+- [ ] Replace demo placeholder with a real screenshot, GIF, or short video.
+
+## 7. Re-evaluation / next validation
+
+- [ ] Test package-style install from GitHub on a clean or second Termux/Pi setup:
+  ```bash
+  pi install https://github.com/TheAmericanMaker/pi-termux-android-voice
+  ```
+- [ ] Confirm package-style install loads commands without manual `npm run install:android-tts` copy.
+- [ ] Create a GitHub release page for tag `v0.1.0` using `RELEASE_NOTES.md`.
+- [ ] Decide whether to publish to npm or keep GitHub-only installs.
+- [ ] Collect compatibility reports for more Android devices, Termux versions, and TTS engines.
+- [ ] Revisit `/voice-stop` if Termux:API adds a real TTS stop/cancel command.
+- [ ] Consider chunking very long spoken replies into smaller TTS calls.
