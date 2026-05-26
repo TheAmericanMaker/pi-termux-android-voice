@@ -30,6 +30,120 @@ This repo started as notes for making `pi-listen`/Sherpa work on Android Termux.
   cp extensions/android-tts.ts ~/.pi/agent/extensions/android-tts.ts
   ```
 
+## Step-by-step Android setup
+
+These steps assume you are setting this up directly on an Android device.
+
+### 1. Install Termux and Termux:API apps
+
+Install both apps from the same source so their signatures match. Recommended sources:
+
+- F-Droid Termux page: <https://f-droid.org/packages/com.termux/>
+- Termux GitHub releases: <https://github.com/termux/termux-app/releases>
+- Termux:API GitHub releases: <https://github.com/termux/termux-api/releases>
+
+You need **both** Android apps:
+
+1. **Termux** - the terminal app.
+2. **Termux:API** - the Android companion app that exposes Android features like TTS, toast, battery status, etc.
+
+If Android blocks an APK as “built for an older version of Android,” use the newest APK from the Termux GitHub releases or F-Droid. Do not mix Play Store builds with F-Droid/GitHub builds.
+
+### 2. Install Termux packages
+
+Open Termux and run:
+
+```bash
+pkg update
+pkg upgrade
+pkg install termux-api git nodejs
+```
+
+Useful optional packages:
+
+```bash
+pkg install nano openssh
+```
+
+### 3. Verify Termux:API works
+
+Make sure the Termux:API Android app is installed, then run:
+
+```bash
+termux-toast "hello"
+termux-battery-status
+termux-tts-speak "Termux API works"
+```
+
+If `termux-tts-speak` talks, Android TTS is working.
+
+### 4. Install Pi
+
+Install Pi using the official Pi install instructions for your environment. After Pi is installed, verify:
+
+```bash
+pi --version
+```
+
+If you previously installed `pi-listen`, remove it:
+
+```bash
+pi remove npm:@codexstar/pi-listen
+```
+
+### 5. Clone this repo
+
+```bash
+mkdir -p ~/github
+cd ~/github
+git clone <this-repo-url>
+cd android-termux-sherpa-voice-fix
+```
+
+If you downloaded a ZIP instead, extract it and `cd` into the extracted folder.
+
+### 6. Install the Android TTS Pi extension
+
+```bash
+npm run install:android-tts
+```
+
+Equivalent manual install:
+
+```bash
+mkdir -p ~/.pi/agent/extensions
+cp extensions/android-tts.ts ~/.pi/agent/extensions/android-tts.ts
+```
+
+### 7. Reload or restart Pi
+
+Inside Pi, run:
+
+```text
+/reload
+```
+
+Or fully quit and start Pi again.
+
+### 8. Test inside Pi
+
+```text
+/android-speak-test
+/say This is Android text to speech running through Termux API.
+```
+
+To automatically speak assistant replies:
+
+```text
+/voice-auto on
+```
+
+To turn automatic speech back off:
+
+```text
+/voice-auto off
+```
+
 ## Why `pi-listen` was removed
 
 On Android/Termux ARM64, `sherpa-onnx-node` installs the JS wrapper but npm does not provide the required native package:
