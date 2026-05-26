@@ -1,0 +1,5 @@
+blank_issues_enabled: true
+contact_links:
+  - name: Pi Termux Android Voice README
+    url: https://github.com/TheAmericanMaker/pi-termux-android-voice#readme
+    about: Check the setup guide and troubleshooting notes first.

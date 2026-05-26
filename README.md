@@ -4,6 +4,47 @@ This repo started as notes for making `pi-listen`/Sherpa work on Android Termux.
 
 See `RELEASE_NOTES.md` for release history.
 
+## Demo
+
+> Screenshot or short demo video/GIF goes here.
+
+A typical successful session looks like this:
+
+```text
+$ npm run doctor
+Summary: 13 passed, 0 warnings, 0 failures.
+
+$ pi
+> /voice-doctor
+Android TTS setup looks good.
+
+> /android-speak-test
+Android TTS test sent.
+
+> /voice-auto on
+Android auto-speak is ON.
+```
+
+Useful demo commands:
+
+```text
+/voice-doctor
+/android-speak-test
+/voice-test-long
+/voice-auto on
+/voice-stop
+/voice-auto off
+```
+
+Example natural-language requests once the assistant tools are loaded:
+
+```text
+Please respond verbally to me.
+Stop talking out loud.
+Read this paragraph aloud.
+Use the Android TTS voice at normal speed.
+```
+
 ## Current working setup
 
 - **Voice input:** any Android voice-to-text keyboard. Samsung voice input is what this device currently uses, but Gboard voice typing or another dictation keyboard should work the same way because Pi only receives normal text.

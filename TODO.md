@@ -35,6 +35,7 @@
 
 ## 6. Demo and examples
 
-- [ ] Add screenshots or a short demo video/GIF.
+- [x] Add screenshots or a short demo video/GIF placeholder and demo transcript.
+- [x] Add GitHub issue templates for bugs, Android setup help, and TTS engine reports.
 - [x] Add example prompts for enabling/disabling verbal mode.
 - [x] Add a longer TTS test paragraph command.
