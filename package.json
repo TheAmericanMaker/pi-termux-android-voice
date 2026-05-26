@@ -5,6 +5,8 @@
   "description": "Android/Termux voice notes and Pi extension using Termux:API TTS as a replacement for pi-listen on Android.",
   "scripts": {
     "install:android-tts": "mkdir -p ~/.pi/agent/extensions && cp extensions/android-tts.ts ~/.pi/agent/extensions/android-tts.ts",
+    "doctor": "bash scripts/doctor.sh",
+    "doctor:speak": "bash scripts/doctor.sh --speak",
     "apply:sherpa-wasm-legacy": "bash scripts/apply-termux-sherpa-wasm-fix.sh",
     "test:tiny": "bash scripts/download-and-test-moonshine-v2-tiny.sh"
   },

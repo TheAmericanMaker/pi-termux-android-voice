@@ -111,6 +111,55 @@ function updateVoiceSettings(rate?: number, pitch?: number): AndroidTtsSettings 
   return settings;
 }
 
+async function commandExists(command: string): Promise<boolean> {
+  try {
+    await execFileAsync("sh", ["-lc", `command -v ${command}`], { timeout: 5_000 });
+    return true;
+  } catch {
+    return false;
+  }
+}
+
+async function commandResponds(command: string, args: string[] = []): Promise<boolean> {
+  try {
+    await execFileAsync(command, args, { timeout: 10_000 });
+    return true;
+  } catch {
+    return false;
+  }
+}
+
+async function voiceDoctorSummary(): Promise<string> {
+  const checks: string[] = [];
+  let failures = 0;
+  let warnings = 0;
+
+  async function check(label: string, ok: boolean | Promise<boolean>, required = true) {
+    const passed = await ok;
+    if (passed) checks.push(`✅ ${label}`);
+    else if (required) {
+      failures += 1;
+      checks.push(`❌ ${label}`);
+    } else {
+      warnings += 1;
+      checks.push(`⚠️ ${label}`);
+    }
+  }
+
+  await check("termux-tts-speak command exists", commandExists("termux-tts-speak"));
+  await check("termux-toast command exists", commandExists("termux-toast"));
+  await check("termux-battery-status command exists", commandExists("termux-battery-status"));
+  await check("termux-tts-engines command exists", commandExists("termux-tts-engines"), false);
+  await check("Termux:API toast responds", commandResponds("termux-toast", ["Pi voice doctor"]));
+  await check("Termux:API battery status responds", commandResponds("termux-battery-status"));
+  await check("settings file exists", existsSync(settingsPath), false);
+
+  checks.push(`Auto-speak: ${settings.autoSpeak ? "ON" : "OFF"}`);
+  checks.push(`Rate: ${settings.rate}, pitch: ${settings.pitch}`);
+  checks.push(`Summary: ${failures} failures, ${warnings} warnings`);
+  return checks.join("\n");
+}
+
 function registerSpeakCommand(pi: ExtensionAPI, name: string, description: string) {
   pi.registerCommand(name, {
     description,
@@ -181,6 +230,18 @@ export default function (pi: ExtensionAPI) {
         setAutoSpeak(false);
         await stopSpeech();
         ctx.ui.notify("Android TTS stopped; auto-speak is OFF", "info");
+      } catch (err: any) {
+        ctx.ui.notify(err?.message ?? String(err), "error");
+      }
+    },
+  });
+
+  pi.registerCommand("voice-doctor", {
+    description: "Check Android Termux:API TTS setup from inside Pi",
+    handler: async (_args, ctx) => {
+      try {
+        const summary = await voiceDoctorSummary();
+        ctx.ui.notify(summary, summary.includes("❌") ? "error" : "info");
       } catch (err: any) {
         ctx.ui.notify(err?.message ?? String(err), "error");
       }

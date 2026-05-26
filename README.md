@@ -111,6 +111,18 @@ Help me set up this Android Termux voice extension on this device. Check Termux:
 
 Pi can run the checks below for you, but they are also listed manually.
 
+You can also run the project doctor script:
+
+```bash
+npm run doctor
+```
+
+For an audible speech test:
+
+```bash
+npm run doctor:speak
+```
+
 ### 6. Verify Termux:API works
 
 Make sure the Termux:API Android app is installed, then run:
@@ -151,6 +163,12 @@ Or fully quit and start Pi again.
 ```text
 /android-speak-test
 /say This is Android text to speech running through Termux API.
+```
+
+To check voice setup from inside Pi:
+
+```text
+/voice-doctor
 ```
 
 To automatically speak assistant replies:
@@ -212,6 +230,7 @@ After `/reload`, the local extension provides:
 /voice-auto on
 /voice-auto off
 /voice-auto status
+/voice-doctor
 /voice-stop
 /voice-settings-android rate=1.0 pitch=1.0
 ```

@@ -20,6 +20,7 @@ Inside Pi after `/reload`:
 - `/voice-auto on` - automatically speak assistant replies.
 - `/voice-auto off` - stop automatic speaking.
 - `/voice-auto status` - show current state.
+- `/voice-doctor` - check Termux:API and Android TTS setup from inside Pi.
 - `/voice-stop` - best-effort stop current speech and disable auto-speak.
 - `ctrl+shift+q` - shortcut for `/voice-stop`.
 - `/voice-settings-android rate=1.0 pitch=1.0` - adjust Android TTS rate/pitch.
