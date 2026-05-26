@@ -30,6 +30,51 @@ This repo started as notes for making `pi-listen`/Sherpa work on Android Termux.
   cp extensions/android-tts.ts ~/.pi/agent/extensions/android-tts.ts
   ```
 
+## Quickstart for existing Termux/Pi users
+
+If you already have Termux, Termux:API, Node, git, and Pi installed:
+
+```bash
+cd ~/github
+git clone https://github.com/TheAmericanMaker/pi-termux-android-voice.git
+cd pi-termux-android-voice
+npm run doctor
+npm run install:android-tts
+```
+
+Then start or reload Pi:
+
+```bash
+pi
+```
+
+Inside Pi:
+
+```text
+/reload
+/voice-doctor
+/android-speak-test
+```
+
+## Known-good environment
+
+This workflow has been tested with:
+
+```text
+Device: Samsung SM-T867V
+Android: 12
+Architecture: aarch64 / arm64-v8a
+Termux APK release: GitHub
+Termux app: 0.118.3
+Termux:API app: 0.53.0
+termux-api package: 0.59.1-1
+Node: v26.2.0
+npm: 11.15.0
+TTS engines seen: Samsung text-to-speech, Google Speech Recognition and Synthesis
+```
+
+Other Android devices should work, but exact Settings screens and TTS engines vary by vendor.
+
 ## Step-by-step Android setup
 
 These steps assume you are setting this up directly on an Android device.
@@ -71,7 +116,21 @@ pkg install nano openssh gh
 
 ### 3. Install Pi coding agent
 
-Install Pi using the official Pi install instructions for your environment. After Pi is installed, verify:
+Install Pi in Termux with npm:
+
+```bash
+npm install -g --ignore-scripts @earendil-works/pi-coding-agent
+```
+
+The `--ignore-scripts` flag is recommended by Pi's install docs and avoids unnecessary npm lifecycle scripts.
+
+Installer alternative:
+
+```bash
+curl -fsSL https://pi.dev/install.sh | sh
+```
+
+After Pi is installed, verify:
 
 ```bash
 pi --version
@@ -162,6 +221,7 @@ Or fully quit and start Pi again.
 
 ```text
 /android-speak-test
+/voice-test-long
 /say This is Android text to speech running through Termux API.
 ```
 
@@ -197,6 +257,91 @@ ctrl+shift+q
 
 This is best-effort because Termux:API does not currently ship a dedicated `termux-tts-stop` command. The extension sends an empty Android TTS utterance to interrupt/flush the current speech, then disables auto-speak so the next replies are text-only.
 
+## Troubleshooting Android / Termux setup
+
+### Termux or Termux:API crashes
+
+If either Android app crashes, behaves strangely, or does not respond to API commands:
+
+1. Back up anything important from Termux.
+2. Uninstall both **Termux** and **Termux:API**.
+3. Install the latest official release APKs for both apps from GitHub:
+   - <https://github.com/termux/termux-app/releases>
+   - <https://github.com/termux/termux-api/releases>
+4. Do not mix Play Store, F-Droid, and GitHub builds.
+5. Reopen Termux and run:
+
+   ```bash
+   pkg update
+   pkg upgrade
+   pkg install termux-api git nodejs
+   ```
+
+### Package mirrors fail
+
+If `pkg update` fails, run:
+
+```bash
+termux-change-repo
+```
+
+Choose a different main repository mirror, then retry:
+
+```bash
+pkg update
+```
+
+### `termux-tts-speak` not found
+
+Install the Termux package:
+
+```bash
+pkg install termux-api
+```
+
+Also make sure the separate **Termux:API Android app** is installed. The package alone is not enough.
+
+### `termux-tts-speak` exists but does not speak
+
+Check Android's TTS setup:
+
+1. Android Settings → **Text-to-speech output**.
+2. Select a preferred engine.
+3. Install/download voice data if needed.
+4. Press Android's built-in **Play** / **Listen to an example** button.
+5. Retry:
+
+   ```bash
+   termux-tts-speak "Termux API works"
+   ```
+
+### Pi extension commands do not appear
+
+Reinstall the extension and reload Pi:
+
+```bash
+cd ~/github/pi-termux-android-voice
+npm run install:android-tts
+```
+
+Then inside Pi:
+
+```text
+/reload
+```
+
+Run the doctor checks:
+
+```bash
+npm run doctor
+```
+
+or from inside Pi:
+
+```text
+/voice-doctor
+```
+
 ## Why `pi-listen` was removed
 
 On Android/Termux ARM64, `sherpa-onnx-node` installs the JS wrapper but npm does not provide the required native package:
@@ -227,6 +372,7 @@ After `/reload`, the local extension provides:
 /say <text>
 /android-speak <text>
 /android-speak-test
+/voice-test-long
 /voice-auto on
 /voice-auto off
 /voice-auto status
@@ -301,6 +447,33 @@ Termux:API Android app
         ↓
 Android system TTS voice
 ```
+
+## Voice input with Android keyboards
+
+Pi does not need a special speech-to-text engine for voice input. Android keyboard dictation enters normal text into the Pi prompt.
+
+### Gboard voice typing
+
+1. Install or enable **Gboard**.
+2. Android Settings → keyboard settings → make Gboard available.
+3. In Gboard settings, enable **Voice typing**.
+4. Open Pi in Termux.
+5. Tap the text input area and use the microphone button on the keyboard.
+6. Speak your prompt, then send it like normal text.
+
+### Samsung voice input
+
+1. Enable **Samsung Keyboard** or **Samsung voice input**.
+2. Open Pi in Termux.
+3. Tap the text input area.
+4. Use the keyboard microphone / voice input button.
+5. Dictate your prompt and send it.
+
+### Dictation tips
+
+- Say punctuation out loud when useful: “period”, “comma”, “new line”.
+- Review dictated text before sending commands that modify files.
+- If one keyboard's dictation is unreliable, try another keyboard; Pi only sees the final text.
 
 ## Voice selection and cadence tuning
 

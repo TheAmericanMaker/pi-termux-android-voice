@@ -196,6 +196,20 @@ export default function (pi: ExtensionAPI) {
     },
   });
 
+  pi.registerCommand("voice-test-long", {
+    description: "Speak a longer Android TTS sample for comparing voices",
+    handler: async (_args, ctx) => {
+      try {
+        await speak(
+          "Here is a longer voice sample for comparing Android text to speech voices. Listen for clarity, pacing, pronunciation, and how naturally the voice handles sentence endings. Some voices sound better for short alerts, while others are easier to listen to during longer assistant replies. If this voice feels comfortable and not too robotic, it may be a good choice for daily use with Pi on Termux."
+        );
+        ctx.ui.notify("Long Android TTS test sent", "info");
+      } catch (err: any) {
+        ctx.ui.notify(err?.message ?? String(err), "error");
+      }
+    },
+  });
+
   pi.registerCommand("voice-auto", {
     description: "Toggle automatic speaking of assistant replies: /voice-auto on|off|status",
     handler: async (args, ctx) => {

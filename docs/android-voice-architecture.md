@@ -17,6 +17,7 @@ Inside Pi after `/reload`:
 - `/say <text>` - speak text using Android TTS.
 - `/android-speak <text>` - same as `/say`.
 - `/android-speak-test` - longer test phrase.
+- `/voice-test-long` - speak a longer sample for comparing Android TTS voices.
 - `/voice-auto on` - automatically speak assistant replies.
 - `/voice-auto off` - stop automatic speaking.
 - `/voice-auto status` - show current state.
