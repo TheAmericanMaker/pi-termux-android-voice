@@ -1,0 +1,21 @@
+--- a/extensions/voice/sherpa-engine.ts
++++ b/extensions/voice/sherpa-engine.ts
+@@
+-	const stream = recognizer.createStream();
+-	stream.acceptWaveform({ sampleRate: 16000, samples });
+-	await recognizer.decodeAsync(stream);
++	const stream = recognizer.createStream();
++	// Native sherpa-onnx-node uses acceptWaveform({ sampleRate, samples });
++	// WASM sherpa-onnx uses acceptWaveform(sampleRate, samples).
++	if (stream.acceptWaveform.length >= 2) {
++		stream.acceptWaveform(16000, samples);
++	} else {
++		stream.acceptWaveform({ sampleRate: 16000, samples });
++	}
++	if (typeof recognizer.decodeAsync === "function") {
++		await recognizer.decodeAsync(stream);
++	} else {
++		recognizer.decode(stream);
++	}
+ 
+ 	const result = recognizer.getResult(stream);

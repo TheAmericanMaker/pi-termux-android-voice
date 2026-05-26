@@ -1,0 +1,28 @@
+--- a/extensions/voice/sherpa-loader.ts
++++ b/extensions/voice/sherpa-loader.ts
+@@
+-		sherpaModule = topHasCreateAsync ? top : (defHasCreateAsync ? def : top);
++		sherpaModule = topHasCreateAsync ? top : (defHasCreateAsync ? def : (def || top));
++
++		// Termux/Android workaround: npm has no native sherpa-onnx-node
++		// android-arm64 binary, but the WASM package (`sherpa-onnx`) loads here.
++		// If the package was installed as an npm alias
++		//   sherpa-onnx-node@npm:sherpa-onnx
++		// expose a tiny native-compatible OfflineRecognizer constructor for STT.
++		if (!sherpaModule?.OfflineRecognizer && typeof sherpaModule?.createOfflineRecognizer === "function") {
++			const wasmSherpa = sherpaModule;
++			sherpaModule = {
++				...wasmSherpa,
++				OfflineRecognizer: class OfflineRecognizer {
++					private recognizer: any;
++					constructor(config: any) {
++						this.recognizer = wasmSherpa.createOfflineRecognizer(config);
++					}
++					createStream() { return this.recognizer.createStream(); }
++					decode(stream: any) { return this.recognizer.decode(stream); }
++					async decodeAsync(stream: any) { return this.recognizer.decode(stream); }
++					getResult(stream: any) { return this.recognizer.getResult(stream); }
++					free() { return this.recognizer.free?.(); }
++				},
++			};
++		}
