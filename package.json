@@ -2,9 +2,10 @@
   "name": "android-termux-sherpa-voice-fix",
   "version": "0.1.0",
   "private": true,
-  "description": "Notes and helper scripts for using sherpa-onnx WASM as a Termux/Android workaround for Pi voice local STT.",
+  "description": "Android/Termux voice notes and Pi extension using Termux:API TTS as a replacement for pi-listen on Android.",
   "scripts": {
-    "apply": "bash scripts/apply-termux-sherpa-wasm-fix.sh",
+    "install:android-tts": "mkdir -p ~/.pi/agent/extensions && cp extensions/android-tts.ts ~/.pi/agent/extensions/android-tts.ts",
+    "apply:sherpa-wasm-legacy": "bash scripts/apply-termux-sherpa-wasm-fix.sh",
     "test:tiny": "bash scripts/download-and-test-moonshine-v2-tiny.sh"
   },
   "license": "MIT"
