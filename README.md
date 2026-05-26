@@ -262,9 +262,48 @@ Termux:API Android app
 Android system TTS voice
 ```
 
-## Voice cadence tuning
+## Voice selection and cadence tuning
 
-Cadence is mostly controlled by the Android TTS engine and Android accessibility/TTS settings. Useful places to tune:
+Android TTS voice selection is mostly controlled by Android itself, not Pi.
+
+### Change the selected Android voice
+
+On most Android devices:
+
+1. Open **Android Settings**.
+2. Search for **Text-to-speech output**.
+3. Choose the preferred TTS engine, such as Google Speech Services, Samsung TTS, etc.
+4. Open that engine's settings/gear icon.
+5. Pick the language, voice, and downloaded voice data you want.
+6. Use the Android **Play** or **Listen to an example** button to test it.
+
+The exact menu names vary by Android version and vendor. Useful search terms in Android Settings:
+
+- `Text-to-speech output`
+- `TTS`
+- `Speech Services`
+- `Preferred engine`
+- `Install voice data`
+
+### Check available Termux TTS engines
+
+In Termux:
+
+```bash
+termux-tts-engines
+```
+
+You can test a specific engine with:
+
+```bash
+termux-tts-speak -e engine.name.here "Testing this Android TTS engine."
+```
+
+Most users should change the preferred engine/voice in Android Settings first. The Pi extension currently uses Android's default selected TTS engine.
+
+### Adjust rate and pitch
+
+Cadence is controlled by a mix of Android TTS settings and Termux options:
 
 - Android Settings → Text-to-speech output → speech rate / pitch
 - Android Settings → Text-to-speech output → preferred engine / voice
@@ -272,7 +311,6 @@ Cadence is mostly controlled by the Android TTS engine and Android accessibility
 
   ```bash
   termux-tts-speak -r 1.0 -p 1.0 "Test sentence one. Test sentence two."
-  termux-tts-engines
   ```
 
 Inside Pi, use:
