@@ -22,7 +22,12 @@ Inside Pi after `/reload`:
 - `/voice-auto status` - show current state.
 - `/voice-settings-android rate=1.0 pitch=1.0` - adjust Android TTS rate/pitch.
 
-The assistant also has a tool named `android_tts_speak`, but it should only use it when explicitly asked to speak aloud.
+The assistant also has tools named:
+
+- `android_tts_speak` - speak a specific message aloud when explicitly asked.
+- `android_tts_config` - enable/disable automatic spoken replies when the user asks for verbal responses or asks to stop speaking aloud.
+
+Auto-speak state and rate/pitch are persisted in `~/.pi/agent/android-tts-settings.json`.
 
 ## Workflow
 
@@ -65,7 +70,6 @@ Android system TTS voice
 
 ## Future features
 
-- Persistent voice settings across Pi restarts.
 - Queue/cancel speech command.
 - Chunk long replies into smaller speak calls.
 - Optional wake/stop phrases if we later add microphone capture.

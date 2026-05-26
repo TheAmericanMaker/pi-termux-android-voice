@@ -180,11 +180,25 @@ After `/reload`, the local extension provides:
 /voice-settings-android rate=1.0 pitch=1.0
 ```
 
-The assistant also has a tool named `android_tts_speak`, but it should only be used when explicitly asked to speak aloud.
+The assistant also has tools named:
+
+- `android_tts_speak` - speak a specific message aloud when explicitly asked.
+- `android_tts_config` - turn automatic voice replies on/off when the user asks for verbal responses or asks to stop speaking.
+
+Example user requests the assistant can handle:
+
+- “Please respond verbally to me.” → enable auto-speak.
+- “Stop talking out loud.” → disable auto-speak.
 
 ## Auto-speak behavior
 
-`/voice-auto on` speaks only finalized assistant messages from Pi's `message_end` event.
+`/voice-auto on` speaks only finalized assistant messages from Pi's `message_end` event. The setting is saved in:
+
+```text
+~/.pi/agent/android-tts-settings.json
+```
+
+That means it survives `/reload` and Pi restarts.
 
 It intentionally does **not** speak:
 
@@ -253,7 +267,6 @@ The extension also adds extra pauses around sentence endings and line breaks bef
 
 ## Next features to consider
 
-- Persist `/voice-auto` and rate/pitch settings across restarts.
 - Add `/voice-stop` or `/voice-cancel` if Android/Termux provides a reliable way to interrupt speech.
 - Chunk very long assistant replies into smaller TTS calls.
 - Package the local extension as a reusable Pi package once the workflow stabilizes.

@@ -2,12 +2,40 @@ import type { ExtensionAPI } from "@earendil-works/pi-coding-agent";
 import { Type } from "typebox";
 import { execFile } from "node:child_process";
 import { promisify } from "node:util";
+import { existsSync, mkdirSync, readFileSync, writeFileSync } from "node:fs";
+import { dirname, join } from "node:path";
+import { homedir } from "node:os";
 
 const execFileAsync = promisify(execFile);
+const settingsPath = join(homedir(), ".pi", "agent", "android-tts-settings.json");
 
-let autoSpeak = false;
-let defaultRate = 1;
-let defaultPitch = 1;
+type AndroidTtsSettings = {
+  autoSpeak: boolean;
+  rate: number;
+  pitch: number;
+};
+
+let settings: AndroidTtsSettings = loadSettings();
+
+function loadSettings(): AndroidTtsSettings {
+  const defaults = { autoSpeak: false, rate: 1, pitch: 1 };
+  try {
+    if (!existsSync(settingsPath)) return defaults;
+    const parsed = JSON.parse(readFileSync(settingsPath, "utf8"));
+    return {
+      autoSpeak: typeof parsed.autoSpeak === "boolean" ? parsed.autoSpeak : defaults.autoSpeak,
+      rate: typeof parsed.rate === "number" ? parsed.rate : defaults.rate,
+      pitch: typeof parsed.pitch === "number" ? parsed.pitch : defaults.pitch,
+    };
+  } catch {
+    return defaults;
+  }
+}
+
+function saveSettings(): void {
+  mkdirSync(dirname(settingsPath), { recursive: true });
+  writeFileSync(settingsPath, JSON.stringify(settings, null, 2) + "\n");
+}
 
 function cleanForSpeech(text: string): string {
   return text
@@ -34,7 +62,7 @@ function messageText(message: any): string {
     .join("\n");
 }
 
-async function speak(text: string, rate = defaultRate, pitch = defaultPitch): Promise<void> {
+async function speak(text: string, rate = settings.rate, pitch = settings.pitch): Promise<void> {
   const trimmed = cleanForSpeech(text);
   if (!trimmed) throw new Error("No text provided");
 
@@ -54,6 +82,22 @@ async function speak(text: string, rate = defaultRate, pitch = defaultPitch): Pr
     const stderr = err?.stderr ? `\n${err.stderr}` : "";
     throw new Error(`termux-tts-speak failed: ${err?.message ?? err}${stderr}`);
   }
+}
+
+function setAutoSpeak(enabled: boolean): AndroidTtsSettings {
+  settings = { ...settings, autoSpeak: enabled };
+  saveSettings();
+  return settings;
+}
+
+function updateVoiceSettings(rate?: number, pitch?: number): AndroidTtsSettings {
+  settings = {
+    ...settings,
+    rate: Number.isFinite(rate) ? Number(rate) : settings.rate,
+    pitch: Number.isFinite(pitch) ? Number(pitch) : settings.pitch,
+  };
+  saveSettings();
+  return settings;
 }
 
 function registerSpeakCommand(pi: ExtensionAPI, name: string, description: string) {
@@ -96,32 +140,35 @@ export default function (pi: ExtensionAPI) {
     description: "Toggle automatic speaking of assistant replies: /voice-auto on|off|status",
     handler: async (args, ctx) => {
       const mode = args.trim().toLowerCase();
-      if (mode === "on") autoSpeak = true;
-      else if (mode === "off") autoSpeak = false;
+      if (mode === "on") setAutoSpeak(true);
+      else if (mode === "off") setAutoSpeak(false);
       else if (mode && mode !== "status") {
         ctx.ui.notify("Usage: /voice-auto on|off|status", "warning");
         return;
       }
-      ctx.ui.notify(`Android auto-speak is ${autoSpeak ? "ON" : "OFF"}`, "info");
+      ctx.ui.notify(`Android auto-speak is ${settings.autoSpeak ? "ON" : "OFF"}`, "info");
     },
   });
 
   pi.registerCommand("voice-settings-android", {
     description: "Set Android TTS rate/pitch: /voice-settings-android rate=1.0 pitch=1.0",
     handler: async (args, ctx) => {
+      let rate: number | undefined;
+      let pitch: number | undefined;
       for (const part of args.trim().split(/\s+/).filter(Boolean)) {
         const [key, raw] = part.split("=");
         const value = Number(raw);
         if (!Number.isFinite(value)) continue;
-        if (key === "rate") defaultRate = value;
-        if (key === "pitch") defaultPitch = value;
+        if (key === "rate") rate = value;
+        if (key === "pitch") pitch = value;
       }
-      ctx.ui.notify(`Android TTS settings: rate=${defaultRate}, pitch=${defaultPitch}`, "info");
+      updateVoiceSettings(rate, pitch);
+      ctx.ui.notify(`Android TTS settings: rate=${settings.rate}, pitch=${settings.pitch}`, "info");
     },
   });
 
   pi.on("message_end", async (event, ctx) => {
-    if (!autoSpeak || event.message.role !== "assistant") return;
+    if (!settings.autoSpeak || event.message.role !== "assistant") return;
     const text = cleanForSpeech(messageText(event.message));
     if (!text) return;
     try {
@@ -149,6 +196,36 @@ export default function (pi: ExtensionAPI) {
       return {
         content: [{ type: "text", text: "Spoken via Android TTS." }],
         details: { length: params.text.length },
+      };
+    },
+  });
+
+  pi.registerTool({
+    name: "android_tts_config",
+    label: "Android TTS Config",
+    description: "Turn Android automatic speaking of assistant replies on or off and adjust rate/pitch.",
+    promptSnippet: "Toggle Android auto-speak for assistant replies when the user asks for verbal responses.",
+    promptGuidelines: [
+      "Use android_tts_config to turn auto-speak on when the user asks for verbal/spoken responses.",
+      "Use android_tts_config to turn auto-speak off when the user asks to stop speaking aloud.",
+      "Do not change auto-speak unless the user requests a voice/speech mode change.",
+    ],
+    parameters: Type.Object({
+      autoSpeak: Type.Optional(Type.Boolean({ description: "Whether assistant replies should be spoken automatically" })),
+      rate: Type.Optional(Type.Number({ description: "Speech rate, e.g. 1.0" })),
+      pitch: Type.Optional(Type.Number({ description: "Speech pitch, e.g. 1.0" })),
+    }),
+    async execute(_toolCallId, params) {
+      if (typeof params.autoSpeak === "boolean") setAutoSpeak(params.autoSpeak);
+      updateVoiceSettings(params.rate, params.pitch);
+      return {
+        content: [
+          {
+            type: "text",
+            text: `Android TTS settings saved. Auto-speak is ${settings.autoSpeak ? "ON" : "OFF"}. rate=${settings.rate}, pitch=${settings.pitch}.`,
+          },
+        ],
+        details: settings,
       };
     },
   });
