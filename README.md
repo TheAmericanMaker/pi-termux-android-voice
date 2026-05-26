@@ -34,20 +34,24 @@ This repo started as notes for making `pi-listen`/Sherpa work on Android Termux.
 
 These steps assume you are setting this up directly on an Android device.
 
+> **Recommended workflow:** install the Pi coding agent early, clone this repo, then open Pi inside the repo and ask it to walk you through the setup. Pi can inspect your Termux environment, check installed packages, run verification commands, and help with device-specific issues.
+
 ### 1. Install Termux and Termux:API apps
-
-Install both apps from the same source so their signatures match. Recommended sources:
-
-- F-Droid Termux page: <https://f-droid.org/packages/com.termux/>
-- Termux GitHub releases: <https://github.com/termux/termux-app/releases>
-- Termux:API GitHub releases: <https://github.com/termux/termux-api/releases>
 
 You need **both** Android apps:
 
 1. **Termux** - the terminal app.
 2. **Termux:API** - the Android companion app that exposes Android features like TTS, toast, battery status, etc.
 
-If Android blocks an APK as “built for an older version of Android,” use the newest APK from the Termux GitHub releases or F-Droid. Do not mix Play Store builds with F-Droid/GitHub builds.
+Recommended APK sources:
+
+- Termux GitHub releases: <https://github.com/termux/termux-app/releases>
+- Termux:API GitHub releases: <https://github.com/termux/termux-api/releases>
+- F-Droid Termux page: <https://f-droid.org/packages/com.termux/>
+
+Install both apps from the same source/signing family so their signatures match. In testing, the newest APKs from the official GitHub release pages were more reliable than older/stale builds. If the F-Droid build crashes or behaves strangely on your device, uninstall both Termux apps and install the latest GitHub release APKs for both Termux and Termux:API.
+
+If Android blocks an APK as “built for an older version of Android,” use the newest APK from the official GitHub releases. Do not mix Play Store builds with F-Droid/GitHub builds.
 
 ### 2. Install Termux packages
 
@@ -62,22 +66,10 @@ pkg install termux-api git nodejs
 Useful optional packages:
 
 ```bash
-pkg install nano openssh
+pkg install nano openssh gh
 ```
 
-### 3. Verify Termux:API works
-
-Make sure the Termux:API Android app is installed, then run:
-
-```bash
-termux-toast "hello"
-termux-battery-status
-termux-tts-speak "Termux API works"
-```
-
-If `termux-tts-speak` talks, Android TTS is working.
-
-### 4. Install Pi
+### 3. Install Pi coding agent
 
 Install Pi using the official Pi install instructions for your environment. After Pi is installed, verify:
 
@@ -91,7 +83,7 @@ If you previously installed `pi-listen`, remove it:
 pi remove npm:@codexstar/pi-listen
 ```
 
-### 5. Clone this repo
+### 4. Clone this repo
 
 ```bash
 mkdir -p ~/github
@@ -102,7 +94,36 @@ cd pi-termux-android-voice
 
 If you downloaded a ZIP instead, extract it and `cd` into the extracted folder.
 
-### 6. Install the Android TTS Pi extension
+### 5. Let Pi help from inside the repo
+
+Start Pi from the repo folder:
+
+```bash
+cd ~/github/pi-termux-android-voice
+pi
+```
+
+Then ask Pi something like:
+
+```text
+Help me set up this Android Termux voice extension on this device. Check Termux:API, install the extension, and verify TTS.
+```
+
+Pi can run the checks below for you, but they are also listed manually.
+
+### 6. Verify Termux:API works
+
+Make sure the Termux:API Android app is installed, then run:
+
+```bash
+termux-toast "hello"
+termux-battery-status
+termux-tts-speak "Termux API works"
+```
+
+If `termux-tts-speak` talks, Android TTS is working.
+
+### 7. Install the Android TTS Pi extension
 
 ```bash
 npm run install:android-tts
@@ -115,7 +136,7 @@ mkdir -p ~/.pi/agent/extensions
 cp extensions/android-tts.ts ~/.pi/agent/extensions/android-tts.ts
 ```
 
-### 7. Reload or restart Pi
+### 8. Reload or restart Pi
 
 Inside Pi, run:
 
@@ -125,7 +146,7 @@ Inside Pi, run:
 
 Or fully quit and start Pi again.
 
-### 8. Test inside Pi
+### 9. Test inside Pi
 
 ```text
 /android-speak-test
