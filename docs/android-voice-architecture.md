@@ -64,6 +64,7 @@ Android system TTS voice
 - Avoid `pi-listen` because its offline TTS path falls back to WASM and lacks `OfflineTts.createAsync`.
 - Use Android's system TTS because it already works on this device.
 - Keep speech output explicit by default so every assistant message is not automatically read unless requested.
+- When `android_tts_speak` speaks requested text directly, suppress the next auto-spoken assistant summary to avoid duplicate speech.
 - Strip code blocks and markdown before speaking to avoid awkward long code narration.
 - Add light punctuation/line-break cleanup before speaking so Android TTS has better pause cues.
 - Voice cadence is mostly controlled by Android's TTS engine, preferred voice, speech rate, and pitch settings.

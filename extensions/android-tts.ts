@@ -16,6 +16,7 @@ type AndroidTtsSettings = {
 };
 
 let settings: AndroidTtsSettings = loadSettings();
+let suppressNextAssistantAutoSpeak = false;
 
 function loadSettings(): AndroidTtsSettings {
   const defaults = { autoSpeak: false, rate: 1, pitch: 1 };
@@ -169,6 +170,10 @@ export default function (pi: ExtensionAPI) {
 
   pi.on("message_end", async (event, ctx) => {
     if (!settings.autoSpeak || event.message.role !== "assistant") return;
+    if (suppressNextAssistantAutoSpeak) {
+      suppressNextAssistantAutoSpeak = false;
+      return;
+    }
     const text = cleanForSpeech(messageText(event.message));
     if (!text) return;
     try {
@@ -193,6 +198,7 @@ export default function (pi: ExtensionAPI) {
     }),
     async execute(_toolCallId, params) {
       await speak(params.text, params.rate, params.pitch);
+      suppressNextAssistantAutoSpeak = true;
       return {
         content: [{ type: "text", text: "Spoken via Android TTS." }],
         details: { length: params.text.length },

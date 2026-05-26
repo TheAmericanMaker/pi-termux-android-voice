@@ -208,6 +208,7 @@ It intentionally does **not** speak:
 - file edit diffs
 - internal command output
 - streaming partial tokens
+- the next assistant summary after `android_tts_speak` already spoke explicit text
 
 The extension checks:
 
