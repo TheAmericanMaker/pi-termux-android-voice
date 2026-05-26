@@ -144,6 +144,20 @@ To turn automatic speech back off:
 /voice-auto off
 ```
 
+To stop a current spoken reply and turn auto-speak off:
+
+```text
+/voice-stop
+```
+
+There is also a shortcut registered for this:
+
+```text
+ctrl+shift+q
+```
+
+This is best-effort because Termux:API does not currently ship a dedicated `termux-tts-stop` command. The extension sends an empty Android TTS utterance to interrupt/flush the current speech, then disables auto-speak so the next replies are text-only.
+
 ## Why `pi-listen` was removed
 
 On Android/Termux ARM64, `sherpa-onnx-node` installs the JS wrapper but npm does not provide the required native package:
@@ -177,6 +191,7 @@ After `/reload`, the local extension provides:
 /voice-auto on
 /voice-auto off
 /voice-auto status
+/voice-stop
 /voice-settings-android rate=1.0 pitch=1.0
 ```
 
@@ -209,6 +224,8 @@ It intentionally does **not** speak:
 - internal command output
 - streaming partial tokens
 - the next assistant summary after `android_tts_speak` already spoke explicit text
+
+If a spoken reply is too long, use `/voice-stop` or `ctrl+shift+q` to do a best-effort interruption and switch back to text-only replies.
 
 The extension checks:
 

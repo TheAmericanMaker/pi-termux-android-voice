@@ -63,17 +63,9 @@ function messageText(message: any): string {
     .join("\n");
 }
 
-async function speak(text: string, rate = settings.rate, pitch = settings.pitch): Promise<void> {
-  const trimmed = cleanForSpeech(text);
-  if (!trimmed) throw new Error("No text provided");
-
-  const args: string[] = [];
-  if (typeof rate === "number") args.push("-r", String(rate));
-  if (typeof pitch === "number") args.push("-p", String(pitch));
-  args.push(trimmed);
-
+async function runTermuxTts(args: string[], timeout = 120_000): Promise<void> {
   try {
-    await execFileAsync("termux-tts-speak", args, { timeout: 120_000 });
+    await execFileAsync("termux-tts-speak", args, { timeout });
   } catch (err: any) {
     if (err?.code === "ENOENT") {
       throw new Error(
@@ -83,6 +75,24 @@ async function speak(text: string, rate = settings.rate, pitch = settings.pitch)
     const stderr = err?.stderr ? `\n${err.stderr}` : "";
     throw new Error(`termux-tts-speak failed: ${err?.message ?? err}${stderr}`);
   }
+}
+
+async function speak(text: string, rate = settings.rate, pitch = settings.pitch): Promise<void> {
+  const trimmed = cleanForSpeech(text);
+  if (!trimmed) throw new Error("No text provided");
+
+  const args: string[] = [];
+  if (typeof rate === "number") args.push("-r", String(rate));
+  if (typeof pitch === "number") args.push("-p", String(pitch));
+  args.push(trimmed);
+
+  await runTermuxTts(args);
+}
+
+async function stopSpeech(): Promise<void> {
+  // Termux:API does not currently expose a dedicated tts-stop command.
+  // Sending an empty utterance is the best-effort Android TTS interruption path.
+  await runTermuxTts([""], 5_000);
 }
 
 function setAutoSpeak(enabled: boolean): AndroidTtsSettings {
@@ -148,6 +158,32 @@ export default function (pi: ExtensionAPI) {
         return;
       }
       ctx.ui.notify(`Android auto-speak is ${settings.autoSpeak ? "ON" : "OFF"}`, "info");
+    },
+  });
+
+  pi.registerCommand("voice-stop", {
+    description: "Best-effort stop/interruption for current Android TTS speech and disable auto-speak",
+    handler: async (_args, ctx) => {
+      try {
+        setAutoSpeak(false);
+        await stopSpeech();
+        ctx.ui.notify("Android TTS stopped; auto-speak is OFF", "info");
+      } catch (err: any) {
+        ctx.ui.notify(err?.message ?? String(err), "error");
+      }
+    },
+  });
+
+  pi.registerShortcut("ctrl+shift+q", {
+    description: "Stop Android TTS speech and disable auto-speak",
+    handler: async (ctx) => {
+      try {
+        setAutoSpeak(false);
+        await stopSpeech();
+        ctx.ui.notify("Android TTS stopped; auto-speak is OFF", "info");
+      } catch (err: any) {
+        ctx.ui.notify(err?.message ?? String(err), "error");
+      }
     },
   });
 
