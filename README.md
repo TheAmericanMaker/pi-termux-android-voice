@@ -1,4 +1,4 @@
-# Android Termux Voice Notes for Pi
+# Pi Termux Android Voice
 
 This repo started as notes for making `pi-listen`/Sherpa work on Android Termux. The current direction is different: remove `pi-listen` and use Android-native voice pieces that are already reliable on this device.
 
@@ -97,7 +97,7 @@ pi remove npm:@codexstar/pi-listen
 mkdir -p ~/github
 cd ~/github
 git clone <this-repo-url>
-cd android-termux-sherpa-voice-fix
+cd pi-termux-android-voice
 ```
 
 If you downloaded a ZIP instead, extract it and `cd` into the extracted folder.

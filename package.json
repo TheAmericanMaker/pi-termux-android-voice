@@ -1,5 +1,5 @@
 {
-  "name": "android-termux-sherpa-voice-fix",
+  "name": "pi-termux-android-voice",
   "version": "0.1.0",
   "private": true,
   "description": "Android/Termux voice notes and Pi extension using Termux:API TTS as a replacement for pi-listen on Android.",
