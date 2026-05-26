@@ -19,8 +19,8 @@
 - [x] Add assistant-callable `android_tts_config` for toggling verbal replies.
 - [x] Add duplicate-speech suppression after explicit `android_tts_speak` calls.
 - [x] Add best-effort `/voice-stop` and `ctrl+shift+q` shortcut.
-- [ ] Investigate a more reliable Android TTS cancel/flush path than an empty utterance.
-- [ ] Add optional engine/language/voice settings if Termux:API exposes enough reliable controls.
+- [x] Investigate a more reliable Android TTS cancel/flush path than an empty utterance.
+- [x] Add optional engine/language/voice settings if Termux:API exposes enough reliable controls.
 
 ## 4. Voice input docs
 
@@ -30,8 +30,8 @@
 
 ## 5. Packaging
 
-- [ ] Package this as a cleaner Pi installable package/extension if Pi package support fits this use case.
-- [ ] Add release notes and tags once the workflow is stable.
+- [x] Package this as a cleaner Pi installable package/extension if Pi package support fits this use case.
+- [x] Add release notes and tags once the workflow is stable.
 
 ## 6. Demo and examples
 

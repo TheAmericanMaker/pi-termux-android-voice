@@ -3,6 +3,23 @@
   "version": "0.1.0",
   "private": true,
   "description": "Android/Termux voice notes and Pi extension using Termux:API TTS as a replacement for pi-listen on Android.",
+  "keywords": [
+    "pi-package",
+    "pi",
+    "termux",
+    "android",
+    "tts",
+    "voice"
+  ],
+  "pi": {
+    "extensions": [
+      "./extensions"
+    ]
+  },
+  "peerDependencies": {
+    "@earendil-works/pi-coding-agent": "*",
+    "typebox": "*"
+  },
   "scripts": {
     "install:android-tts": "mkdir -p ~/.pi/agent/extensions && cp extensions/android-tts.ts ~/.pi/agent/extensions/android-tts.ts",
     "doctor": "bash scripts/doctor.sh",

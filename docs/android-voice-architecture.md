@@ -25,6 +25,7 @@ Inside Pi after `/reload`:
 - `/voice-stop` - best-effort stop current speech and disable auto-speak.
 - `ctrl+shift+q` - shortcut for `/voice-stop`.
 - `/voice-settings-android rate=1.0 pitch=1.0` - adjust Android TTS rate/pitch.
+- `/voice-settings-android engine=<name> language=<code> region=<region> stream=<stream>` - optionally force Termux:API TTS options.
 
 The assistant also has tools named:
 

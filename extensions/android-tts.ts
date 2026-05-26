@@ -13,6 +13,11 @@ type AndroidTtsSettings = {
   autoSpeak: boolean;
   rate: number;
   pitch: number;
+  engine?: string;
+  language?: string;
+  region?: string;
+  variant?: string;
+  stream?: string;
 };
 
 let settings: AndroidTtsSettings = loadSettings();
@@ -27,6 +32,11 @@ function loadSettings(): AndroidTtsSettings {
       autoSpeak: typeof parsed.autoSpeak === "boolean" ? parsed.autoSpeak : defaults.autoSpeak,
       rate: typeof parsed.rate === "number" ? parsed.rate : defaults.rate,
       pitch: typeof parsed.pitch === "number" ? parsed.pitch : defaults.pitch,
+      engine: typeof parsed.engine === "string" ? parsed.engine : undefined,
+      language: typeof parsed.language === "string" ? parsed.language : undefined,
+      region: typeof parsed.region === "string" ? parsed.region : undefined,
+      variant: typeof parsed.variant === "string" ? parsed.variant : undefined,
+      stream: typeof parsed.stream === "string" ? parsed.stream : undefined,
     };
   } catch {
     return defaults;
@@ -82,6 +92,11 @@ async function speak(text: string, rate = settings.rate, pitch = settings.pitch)
   if (!trimmed) throw new Error("No text provided");
 
   const args: string[] = [];
+  if (settings.engine) args.push("-e", settings.engine);
+  if (settings.language) args.push("-l", settings.language);
+  if (settings.region) args.push("-n", settings.region);
+  if (settings.variant) args.push("-v", settings.variant);
+  if (settings.stream) args.push("-s", settings.stream);
   if (typeof rate === "number") args.push("-r", String(rate));
   if (typeof pitch === "number") args.push("-p", String(pitch));
   args.push(trimmed);
@@ -101,14 +116,39 @@ function setAutoSpeak(enabled: boolean): AndroidTtsSettings {
   return settings;
 }
 
-function updateVoiceSettings(rate?: number, pitch?: number): AndroidTtsSettings {
+function optionalText(value: unknown): string | undefined {
+  if (typeof value !== "string") return undefined;
+  const trimmed = value.trim();
+  if (!trimmed || trimmed.toLowerCase() === "default" || trimmed.toLowerCase() === "none") return undefined;
+  return trimmed;
+}
+
+function updateVoiceSettings(updates: Partial<AndroidTtsSettings>): AndroidTtsSettings {
   settings = {
     ...settings,
-    rate: Number.isFinite(rate) ? Number(rate) : settings.rate,
-    pitch: Number.isFinite(pitch) ? Number(pitch) : settings.pitch,
+    rate: Number.isFinite(updates.rate) ? Number(updates.rate) : settings.rate,
+    pitch: Number.isFinite(updates.pitch) ? Number(updates.pitch) : settings.pitch,
+    engine: Object.prototype.hasOwnProperty.call(updates, "engine") ? optionalText(updates.engine) : settings.engine,
+    language: Object.prototype.hasOwnProperty.call(updates, "language") ? optionalText(updates.language) : settings.language,
+    region: Object.prototype.hasOwnProperty.call(updates, "region") ? optionalText(updates.region) : settings.region,
+    variant: Object.prototype.hasOwnProperty.call(updates, "variant") ? optionalText(updates.variant) : settings.variant,
+    stream: Object.prototype.hasOwnProperty.call(updates, "stream") ? optionalText(updates.stream) : settings.stream,
   };
   saveSettings();
   return settings;
+}
+
+function settingsSummary(): string {
+  return [
+    `autoSpeak=${settings.autoSpeak ? "on" : "off"}`,
+    `rate=${settings.rate}`,
+    `pitch=${settings.pitch}`,
+    `engine=${settings.engine ?? "default"}`,
+    `language=${settings.language ?? "default"}`,
+    `region=${settings.region ?? "default"}`,
+    `variant=${settings.variant ?? "default"}`,
+    `stream=${settings.stream ?? "default"}`,
+  ].join(", ");
 }
 
 async function commandExists(command: string): Promise<boolean> {
@@ -154,8 +194,7 @@ async function voiceDoctorSummary(): Promise<string> {
   await check("Termux:API battery status responds", commandResponds("termux-battery-status"));
   await check("settings file exists", existsSync(settingsPath), false);
 
-  checks.push(`Auto-speak: ${settings.autoSpeak ? "ON" : "OFF"}`);
-  checks.push(`Rate: ${settings.rate}, pitch: ${settings.pitch}`);
+  checks.push(`Settings: ${settingsSummary()}`);
   checks.push(`Summary: ${failures} failures, ${warnings} warnings`);
   return checks.join("\n");
 }
@@ -263,19 +302,21 @@ export default function (pi: ExtensionAPI) {
   });
 
   pi.registerCommand("voice-settings-android", {
-    description: "Set Android TTS rate/pitch: /voice-settings-android rate=1.0 pitch=1.0",
+    description: "Set Android TTS options: /voice-settings-android rate=1.0 pitch=1.0 engine=default language=default stream=default",
     handler: async (args, ctx) => {
-      let rate: number | undefined;
-      let pitch: number | undefined;
+      const updates: Partial<AndroidTtsSettings> = {};
       for (const part of args.trim().split(/\s+/).filter(Boolean)) {
         const [key, raw] = part.split("=");
+        if (!key || raw === undefined) continue;
         const value = Number(raw);
-        if (!Number.isFinite(value)) continue;
-        if (key === "rate") rate = value;
-        if (key === "pitch") pitch = value;
+        if (key === "rate" && Number.isFinite(value)) updates.rate = value;
+        else if (key === "pitch" && Number.isFinite(value)) updates.pitch = value;
+        else if (["engine", "language", "region", "variant", "stream"].includes(key)) {
+          (updates as any)[key] = raw;
+        }
       }
-      updateVoiceSettings(rate, pitch);
-      ctx.ui.notify(`Android TTS settings: rate=${settings.rate}, pitch=${settings.pitch}`, "info");
+      updateVoiceSettings(updates);
+      ctx.ui.notify(`Android TTS settings: ${settingsSummary()}`, "info");
     },
   });
 
@@ -331,15 +372,20 @@ export default function (pi: ExtensionAPI) {
       autoSpeak: Type.Optional(Type.Boolean({ description: "Whether assistant replies should be spoken automatically" })),
       rate: Type.Optional(Type.Number({ description: "Speech rate, e.g. 1.0" })),
       pitch: Type.Optional(Type.Number({ description: "Speech pitch, e.g. 1.0" })),
+      engine: Type.Optional(Type.String({ description: "Android TTS engine name from termux-tts-engines, or default/none" })),
+      language: Type.Optional(Type.String({ description: "Language code for Android TTS, or default/none" })),
+      region: Type.Optional(Type.String({ description: "Language region for Android TTS, or default/none" })),
+      variant: Type.Optional(Type.String({ description: "Language variant for Android TTS, or default/none" })),
+      stream: Type.Optional(Type.String({ description: "Android audio stream, e.g. NOTIFICATION, MUSIC, ALARM, RING, SYSTEM, VOICE_CALL, or default/none" })),
     }),
     async execute(_toolCallId, params) {
       if (typeof params.autoSpeak === "boolean") setAutoSpeak(params.autoSpeak);
-      updateVoiceSettings(params.rate, params.pitch);
+      updateVoiceSettings(params);
       return {
         content: [
           {
             type: "text",
-            text: `Android TTS settings saved. Auto-speak is ${settings.autoSpeak ? "ON" : "OFF"}. rate=${settings.rate}, pitch=${settings.pitch}.`,
+            text: `Android TTS settings saved. ${settingsSummary()}.`,
           },
         ],
         details: settings,

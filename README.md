@@ -2,6 +2,8 @@
 
 This repo started as notes for making `pi-listen`/Sherpa work on Android Termux. The current direction is different: remove `pi-listen` and use Android-native voice pieces that are already reliable on this device.
 
+See `RELEASE_NOTES.md` for release history.
+
 ## Current working setup
 
 - **Voice input:** any Android voice-to-text keyboard. Samsung voice input is what this device currently uses, but Gboard voice typing or another dictation keyboard should work the same way because Pi only receives normal text.
@@ -196,6 +198,8 @@ If `termux-tts-speak` talks, Android TTS is working.
 
 ### 7. Install the Android TTS Pi extension
 
+Recommended while developing from a clone:
+
 ```bash
 npm run install:android-tts
 ```
@@ -206,6 +210,14 @@ Equivalent manual install:
 mkdir -p ~/.pi/agent/extensions
 cp extensions/android-tts.ts ~/.pi/agent/extensions/android-tts.ts
 ```
+
+Package-style install from GitHub:
+
+```bash
+pi install https://github.com/TheAmericanMaker/pi-termux-android-voice
+```
+
+The package-style install uses the `pi` manifest in `package.json` and loads `extensions/android-tts.ts` directly as a Pi package.
 
 ### 8. Reload or restart Pi
 
@@ -379,12 +391,14 @@ After `/reload`, the local extension provides:
 /voice-doctor
 /voice-stop
 /voice-settings-android rate=1.0 pitch=1.0
+/voice-settings-android engine=com.samsung.SMT
+/voice-settings-android engine=default language=default stream=default
 ```
 
 The assistant also has tools named:
 
 - `android_tts_speak` - speak a specific message aloud when explicitly asked.
-- `android_tts_config` - turn automatic voice replies on/off when the user asks for verbal responses or asks to stop speaking.
+- `android_tts_config` - turn automatic voice replies on/off and adjust Android TTS settings when the user asks.
 
 Example user requests the assistant can handle:
 
@@ -534,8 +548,38 @@ Inside Pi, use:
 
 The extension also adds extra pauses around sentence endings and line breaks before sending text to Android TTS. If the keyboard dictation does not add punctuation, the TTS engine has less information to work with, so saying punctuation while dictating can help, for example: “period”, “comma”, or “new line”.
 
+### Optional engine/language/stream settings
+
+The extension can persist the same optional settings exposed by `termux-tts-speak`:
+
+```text
+/voice-settings-android engine=com.samsung.SMT
+/voice-settings-android language=en region=US
+/voice-settings-android stream=MUSIC
+```
+
+Reset a setting back to Android's default with `default` or `none`:
+
+```text
+/voice-settings-android engine=default language=default region=default variant=default stream=default
+```
+
+Common audio streams include:
+
+```text
+ALARM, MUSIC, NOTIFICATION, RING, SYSTEM, VOICE_CALL
+```
+
+List available Android TTS engines with:
+
+```bash
+termux-tts-engines
+```
+
+Most users should still choose the preferred voice in Android Settings first; these advanced options are mainly for testing or forcing a specific installed engine.
+
 ## Next features to consider
 
-- Add `/voice-stop` or `/voice-cancel` if Android/Termux provides a reliable way to interrupt speech.
+- Improve `/voice-stop` if Android/Termux provides a reliable way to interrupt speech. Current research is in `docs/android-tts-cancel-research.md`.
 - Chunk very long assistant replies into smaller TTS calls.
-- Package the local extension as a reusable Pi package once the workflow stabilizes.
+- Publish a tagged release once the workflow stabilizes.
